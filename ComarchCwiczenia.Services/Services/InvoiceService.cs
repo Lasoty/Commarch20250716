@@ -4,6 +4,41 @@ namespace ComarchCwiczenia.Services.Services;
 
 public class InvoiceService
 {
+    private readonly ITaxService _taxService;
+    private readonly IDiscountService _discountService;
+
+    public InvoiceService()
+    {
+        
+    }
+
+    public InvoiceService(ITaxService taxService, IDiscountService discountService)
+    {
+        _taxService = taxService;
+        _discountService = discountService;
+    }
+
+    public decimal CalculateTotal(decimal amount, string customerType)
+    {
+        var discount = _discountService.CalculateDiscount(amount, customerType);
+        var taxableAmount = amount - discount;
+        try
+        {
+            var tax = _taxService.GetTax(taxableAmount);
+            return taxableAmount - tax;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw new Exception("Nie udało się obliczyć podatku.", ex);
+        }
+    }
+
+
+
+
+    #region Stare metody
+
     public event EventHandler? InvoiceItemsGenerated;
 
     public string GetInvoiceNumber()
@@ -29,4 +64,16 @@ public class InvoiceService
     {
         throw new FormatException("Podany format jest nieprawidłowy");
     }
+
+#endregion
+}
+
+public interface IDiscountService
+{
+    decimal CalculateDiscount(decimal amount, string customerType);
+}
+
+public interface ITaxService
+{
+    decimal GetTax(decimal amount);
 }
