@@ -47,6 +47,7 @@ public class InvoiceServiceFluentTests
     }
     #endregion
 
+    #region Testy kolekcji
     [Test]
     public void GenerateInvoiceItems_ShouldReturn_NotEmptyCollection()
     {
@@ -76,6 +77,26 @@ public class InvoiceServiceFluentTests
     {
         var actual = _cut.GenerateInvoiceItems();
         actual.Should().BeInAscendingOrder(item => item.Quantity);
+    } 
+    #endregion
+
+    [Test]
+    public async Task FakedErrorMethod_Should_ThrowsException()
+    {
+        (await _cut.Invoking(async service => await service.FakedErrorMethod()).Should()
+            .ThrowAsync<FormatException>()).WithMessage("*Podany format jest nieprawidłowy*");
+
+        Func<Task> act = async () => await _cut.FakedErrorMethod();
+        await act.Should().ThrowAsync<FormatException>()
+            .WithMessage("*Podany format jest nieprawidłowy*");
+    }
+
+    [Test]
+    public void GenerateInvoiceItems_ShouldRaise_InvoiceItemsGeneratedEvent()
+    {
+        using var monitoredSubject = _cut.Monitor();
+        var items = _cut.GenerateInvoiceItems();
+        monitoredSubject.Should().Raise(nameof(InvoiceService.InvoiceItemsGenerated));
     }
 
 
