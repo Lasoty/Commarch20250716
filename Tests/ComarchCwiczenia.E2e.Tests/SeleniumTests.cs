@@ -35,7 +35,6 @@ public class SeleniumTests
         options.AddArgument("--window-size=1920,1080");
         options.AddArgument("--incognito");
         options.AddArgument("--start-maximized");
-        options.AddArgument("--start-maximized");
         options.AddArgument("--disable-extensions");
         options.AddArgument("--no-sandbox");
         options.AddArgument("--disable-infobars");
@@ -43,9 +42,6 @@ public class SeleniumTests
         options.AddArgument("--ignore-certificate-errors");
         options.AddArgument("--allow-insecure-localhost");
         options.AddArgument("--lang=en-US");
-
-
-
     }
 
     [SetUp]
