@@ -1,7 +1,9 @@
-﻿using NUnit.Framework.Internal;
+﻿using NUnit.Framework.Constraints;
+using NUnit.Framework.Internal;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 using WebDriverManager.DriverConfigs.Impl;
 
 namespace ComarchCwiczenia.E2e.Tests;
@@ -10,17 +12,26 @@ namespace ComarchCwiczenia.E2e.Tests;
 public class SeleniumTests
 {
     private IWebDriver driver;
+    ChromeOptions options;
 
     [OneTimeSetUp]
     public void OneTimeSetup()
     {
         new WebDriverManager.DriverManager().SetUpDriver(new ChromeConfig());
+
+        options = new ChromeOptions();
+        string downloadPath = Path.Combine(Environment.CurrentDirectory, "Downloads");
+
+        options.AddUserProfilePreference("download.default_directory", downloadPath);
+        options.AddUserProfilePreference("download.prompt_for_download", false);
+        options.AddUserProfilePreference("download.directory_upgrade", true);
+        options.AddUserProfilePreference("safebrowsing.enabled", true);
     }
 
     [SetUp]
     public void Setup()
     {
-        driver = new ChromeDriver();
+        driver = new ChromeDriver(options);
         driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
     }
 
@@ -153,6 +164,79 @@ public class SeleniumTests
         Assert.That(resultText.Text, Is.EqualTo("You entered: Test Selenium"), "Komunikat po akceptacji prompta jest nieprawidłowy!");
     }
 
+    [Test]
+    public void DynamicLoadingTest()
+    {
+        driver.Navigate().GoToUrl("https://the-internet.herokuapp.com/dynamic_loading/1");
+        var startBtn = driver.FindElement(By.XPath("//*[@id=\"start\"]/button"));
+        startBtn.Click();
 
+        WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+        var loadedElement = wait.Until(ExpectedConditions.ElementIsVisible(By.Id("finish")));
+        Assert.That(loadedElement.Text, Does.Contain("Hello World!"));
+    }
+
+    [Test]
+    public void DynamicLoadingTestWhenNotExists()
+    {
+        driver.Navigate().GoToUrl("https://the-internet.herokuapp.com/dynamic_loading/2");
+        var startBtn = driver.FindElement(By.XPath("//*[@id=\"start\"]/button"));
+        startBtn.Click();
+
+        WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+        var loadedElement = wait.Until(ExpectedConditions.ElementExists(By.Id("finish")));
+        Assert.That(loadedElement.Text, Does.Contain("Hello World!"));
+    }
+
+    [Test]
+    public void FileUploadTest()
+    {
+        FileInfo fileInfo = new FileInfo(Path.Combine("Assets", "UploadFileTestLL.txt"));
+        driver.Navigate().GoToUrl("https://the-internet.herokuapp.com/upload");
+        var fileInput = driver.FindElement(By.Id("file-upload"));
+        fileInput.SendKeys(fileInfo.FullName);
+        var uploadBtn = driver.FindElement(By.Id("file-submit"));
+        uploadBtn.Click();
+
+        var resultInfo = driver.FindElement(By.Id("uploaded-files"));
+        Assert.That(resultInfo.Text, Does.Contain(fileInfo.Name));
+    }
+
+    [Test]
+    public void FileDownloadTest()
+    {
+        string fileName = "UploadFileTestLL.txt";
+        DirectoryInfo dir = PrepareFolder();
+        // string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        // dir = new DirectoryInfo(path);
+        
+        driver.Navigate().GoToUrl("https://the-internet.herokuapp.com/download");
+        var downloadLink = driver.FindElement(By.LinkText(fileName));
+        downloadLink.Click();
+
+        Thread.Sleep(1000);
+
+        Assert.That(dir.GetFiles().Any(f => f.Name == fileName), Is.True);
+        dir.Delete(true);
+    }
+
+    private DirectoryInfo PrepareFolder()
+    {
+        string dir = "Downloads";
+        DirectoryInfo directory = new DirectoryInfo(dir);
+
+        if (!directory.Exists)
+            directory.Create();
+
+        if (directory.GetFiles().Any())
+        {
+            foreach (var file in directory.GetFiles())
+            {
+                file.Delete();
+            }
+        }
+
+        return directory;
+    }
 
 }
