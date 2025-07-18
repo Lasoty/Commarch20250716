@@ -99,6 +99,22 @@ public class SeleniumTests
 
         selectElement.SelectByValue("2");
         Assert.That(selectElement.SelectedOption.Text, Is.EqualTo("Option 2"));
+    }
+
+    [Test]
+    public void HandleJavaScriptAlerts()
+    {
+        driver.Navigate().GoToUrl("https://the-internet.herokuapp.com/javascript_alerts");
+
+        var alertButton = driver.FindElement(By.XPath("//*[@id=\"content\"]/div/ul/li[1]/button"));
+        alertButton.Click();
+
+        var alert = driver.SwitchTo().Alert();
+        Assert.That(alert.Text, Is.EqualTo("I am a JS Alert"));
+        alert.Accept();
+
+        var resultText = driver.FindElement(By.Id("result"));
+        Assert.That(resultText.Text, Is.EqualTo("You successfully clicked an alert"));
 
     }
 
