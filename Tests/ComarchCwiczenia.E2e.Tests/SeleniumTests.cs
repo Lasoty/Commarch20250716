@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium;
+﻿using NUnit.Framework.Internal;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using WebDriverManager.DriverConfigs.Impl;
@@ -116,6 +117,42 @@ public class SeleniumTests
         var resultText = driver.FindElement(By.Id("result"));
         Assert.That(resultText.Text, Is.EqualTo("You successfully clicked an alert"));
 
+        // Test dla JS Confirm
+        var confirmButton = driver.FindElement(By.XPath("//button[text()='Click for JS Confirm']"));
+        confirmButton.Click();
+
+        // Przechwytujemy alert confirm
+        alert = driver.SwitchTo().Alert();
+        Assert.That(alert.Text, Is.EqualTo("I am a JS Confirm"), "Tekst confirm jest nieprawidłowy!");
+
+        // Odrzucamy confirm
+        alert.Dismiss();
+
+        // Sprawdzamy, czy wyświetlił się komunikat o odrzuceniu
+        resultText = driver.FindElement(By.Id("result"));
+        Assert.That(resultText.Text, Is.EqualTo("You clicked: Cancel"), "Komunikat po odrzuceniu confirm jest nieprawidłowy!");
+
+
+
+        // Test dla JS Prompt
+        var promptButton = driver.FindElement(By.XPath("//button[text()='Click for JS Prompt']"));
+        promptButton.Click();
+
+        // Przechwytujemy prompt
+        alert = driver.SwitchTo().Alert();
+        Assert.That(alert.Text, Is.EqualTo("I am a JS prompt"), "Tekst prompt jest nieprawidłowy!");
+        
+        // Wprowadzamy tekst do prompta
+        alert.SendKeys("Test Selenium");
+
+        // Akceptujemy prompt
+        alert.Accept();
+
+        // Sprawdzamy, czy wyświetlił się komunikat z wpisanym tekstem
+        resultText = driver.FindElement(By.Id("result"));
+        Assert.That(resultText.Text, Is.EqualTo("You entered: Test Selenium"), "Komunikat po akceptacji prompta jest nieprawidłowy!");
     }
+
+
 
 }
