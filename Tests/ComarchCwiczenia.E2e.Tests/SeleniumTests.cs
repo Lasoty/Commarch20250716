@@ -26,6 +26,26 @@ public class SeleniumTests
         options.AddUserProfilePreference("download.prompt_for_download", false);
         options.AddUserProfilePreference("download.directory_upgrade", true);
         options.AddUserProfilePreference("safebrowsing.enabled", true);
+
+        // Wyłączenie jawnego okna przeglądarki
+        options.AddArgument("headless");
+        options.AddArgument("--disable-gpu");
+
+        // Inne przydatne ustawienia
+        options.AddArgument("--window-size=1920,1080");
+        options.AddArgument("--incognito");
+        options.AddArgument("--start-maximized");
+        options.AddArgument("--start-maximized");
+        options.AddArgument("--disable-extensions");
+        options.AddArgument("--no-sandbox");
+        options.AddArgument("--disable-infobars");
+        options.AddArgument("--disable-dev-shm-usage");
+        options.AddArgument("--ignore-certificate-errors");
+        options.AddArgument("--allow-insecure-localhost");
+        options.AddArgument("--lang=en-US");
+
+
+
     }
 
     [SetUp]
